@@ -20,15 +20,15 @@ This system solves that by:
 
 ## 🧠 System Architecture
 
-User Query
-↓
-Query Embedding (Gemini)
-↓
-FAISS Vector Search (Top-N candidates)
-↓
-LLM-based Reranking (OpenAI)
-↓
-Final Ranked Assessment Recommendations
+User Query  
+↓  
+Query Embedding (Gemini)  
+↓  
+FAISS Vector Search (Top-N candidates)  
+↓  
+LLM-based Reranking (OpenAI)  
+↓  
+Final Ranked Assessment Recommendations  
 
 This follows a **two-stage retrieval architecture**, which is industry standard for large-scale semantic search systems.
 
@@ -90,10 +90,10 @@ pip install -r requirements.txt
 ```
 
 Run retrieval and reranking tests:
-
-python -m retrieval.test_retrieval
+```bash
+python -m retrieval.test_retrieval  
 python -m reranking.test_rerank
-
+```
 ⚠️ Assumptions & Limitations
 
 Some assessments do not expose duration or job level information
