@@ -1,150 +1,118 @@
-SHL GenAI Assessment Recommendation System
+# SHL GenAI Assessment Recommendation System
 
-This project builds an intelligent recommendation system that suggests relevant SHL Individual Test Solutions based on a natural language query or job description.
+This project builds an intelligent recommendation system that suggests relevant **SHL Individual Test Solutions** based on a natural language job description or query.
 
-The repository currently implements the complete data ingestion pipeline, producing a clean, structured dataset ready for semantic search and GenAI-powered recommendations.
+The repository currently implements the **complete core retrieval pipeline**, producing high-quality, ranked assessment recommendations using modern GenAI techniques.
 
-📌 Current Phase: Data Ingestion
+---
 
-The goal of this phase is to programmatically extract all individual SHL assessments along with their detailed metadata from the SHL Product Catalog.
+## 🔍 Problem Overview
 
-The resulting dataset is designed for downstream use in:
+Recruiters and hiring managers often struggle to identify the most suitable assessments for a given role from a large catalog.
 
-Embedding-based retrieval (FAISS)
+This system solves that by:
+- Accepting a free-text job description
+- Understanding semantic intent using embeddings
+- Retrieving relevant assessments efficiently
+- Reranking results using an LLM for true job relevance
 
-LLM-assisted ranking and reasoning
+---
 
-API and frontend deployment
+## 🧠 System Architecture
 
-📂 Data Source
+User Query
+↓
+Query Embedding (Gemini)
+↓
+FAISS Vector Search (Top-N candidates)
+↓
+LLM-based Reranking (OpenAI)
+↓
+Final Ranked Assessment Recommendations
 
-Website: https://www.shl.com/products/product-catalog/
+This follows a **two-stage retrieval architecture**, which is industry standard for large-scale semantic search systems.
 
-Scope: Individual Test Solutions only
-(Pre-packaged job solutions are intentionally excluded)
+---
 
-🏗 Architecture
-Step 1 — Catalog Scraping
+## ✅ Implemented Features (Current Phase)
 
-File: ingestion/scrape_catalog.py
+### Step 1 — Data Ingestion
+- Scraped SHL Product Catalog (Individual Test Solutions only)
+- Extracted assessment metadata:
+  - Name
+  - URL
+  - Test type
+  - Remote & adaptive support
+  - Description
+  - Duration
+  - Job levels
+  - Languages
+- Handled pagination edge cases and deduplication
 
-Iterates through paginated SHL catalog (start=0, 12, 24, …)
+📁 Output:
+- `data/raw/assessments_listing.json`
+- `data/processed/assessments_full.json`
 
-Extracts:
+---
 
-Assessment name
+### Step 2 — Embeddings & Vector Store
+- Generated embeddings using **Gemini text-embedding-004**
+- Built a **FAISS index** for fast similarity search
+- Persisted index to disk
 
-Assessment URL
+📁 Output:
+- `data/processed/assessments_embeddings.json`
+- `embeddings/faiss_index/index.bin`
 
-Test type (K, S, P, etc.)
+---
 
-Remote testing support
+### Step 3 — Semantic Retrieval
+- Embedded user queries
+- Retrieved semantically similar assessments using FAISS
+- Verified vector dimensions and index consistency
 
-Adaptive support
+---
 
-Handles pagination edge cases
+### Step 4 — LLM-based Reranking
+- Used **OpenAI (gpt-4o-mini)** to rerank FAISS candidates
+- Ranked assessments based on true job relevance, not just similarity
+- Produced final, ordered recommendations
 
-Deduplicates assessments across pages
+This ensures that **similar ≠ relevant** results are filtered correctly.
 
-Safely terminates scraping at catalog end
+---
 
-📄 Output
+## 🧪 How to Run (Core Pipeline)
 
-data/raw/assessments_listing.json
-
-Step 2 — Assessment Detail Scraping
-
-File: ingestion/scrape_details.py
-
-Visits each assessment detail page
-
-Extracts:
-
-Description
-
-Assessment duration (minutes)
-
-Job levels
-
-Languages
-
-Test type (validated from detail page)
-
-Uses multiple fallback selectors to handle HTML inconsistencies
-
-Gracefully handles missing fields
-
-📄 Output
-
-data/processed/assessments_full.json
-
-Step 3 — Dataset Merging & Enrichment
-
-File: ingestion/merge_assessments.py
-
-Reads catalog listings
-
-Enriches each assessment with detailed metadata
-
-Produces the final structured dataset
-
-Implements rate limiting and error handling
-
-📄 Final Output
-
-data/processed/assessments_full.json
-
-📊 Final Dataset Schema
-{
-  "name": "ASP.NET 4.5",
-  "url": "https://www.shl.com/products/product-catalog/view/asp-net-4-5/",
-  "test_type": ["K"],
-  "remote_support": "Yes",
-  "adaptive_support": "Yes",
-  "description": "...",
-  "duration_minutes": 30,
-  "job_levels": [
-    "Professional Individual Contributor",
-    "Mid-Professional"
-  ],
-  "languages": [
-    "English (USA)"
-  ]
-}
-
-▶️ How to Run
-1️⃣ Install dependencies
+Install dependencies:
+```bash
 pip install -r requirements.txt
+```
 
-2️⃣ Run catalog scraper
-python ingestion/scrape_catalog.py
+Run retrieval and reranking tests:
 
-3️⃣ Run assessment enrichment
-python ingestion/merge_assessment.py
+python -m retrieval.test_retrieval
+python -m reranking.test_rerank
 
 ⚠️ Assumptions & Limitations
 
-Some assessments do not expose duration or job levels; fields may be null
+Some assessments do not expose duration or job level information
 
-Skills are not explicitly listed on most assessment pages and are therefore omitted
+Skills are not explicitly listed on most SHL pages and are omitted
 
-Pagination behavior is inconsistent; safeguards are added to prevent premature termination
+Scraping respects rate limits via request delays
 
-Scraping respects rate limits using request delays
+Reranking uses a lightweight LLM to minimize cost
 
-🚀 Planned Next Steps
+🚀 Next Steps
 
-Embed assessment descriptions using a language model
+Wrap retrieval pipeline into a FastAPI backend
 
-Implement semantic retrieval using FAISS
+Build a Streamlit web interface
 
-Add LLM-based reranking
+Add evaluation metrics (Recall@K)
 
-Expose recommendations via FastAPI
-
-Build a lightweight Streamlit frontend
-
-Evaluate using Recall@K metrics
+Generate final CSV predictions for test queries
 
 👤 Author
 
