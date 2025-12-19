@@ -127,7 +127,7 @@ Content-Type: application/json
 Body:
 {
 "query": "string",
-"top_k": 5
+"top_k": 10
 }
 ```
 
@@ -178,27 +178,27 @@ Swagger UI available at:
 http://127.0.0.1:8000/docs
 
 
-## 📊 Evaluation (Upcoming)
+## 📊 Evaluation
 
-- Recall@10 using the provided train/test dataset  
+- Mean Recall@10 using the provided train/test dataset  
 
 - Evaluation applied at:  
 
-  -  Retrieval stage  
+  - Retrieval stage  
 
   - Final recommendation stage  
 
-- Analysis of recommendation balance across test types (e.g., Knowledge & Skills vs Personality & Behaviour)
+- Includes analysis of recommendation balance across test types
 
 ## ⚠️ Assumptions & Limitations
 
-Some assessments do not expose duration or job level information
+- Some assessments do not expose duration or job level information  
 
-Skills are not explicitly listed on most SHL pages and are omitted
+- Skills are not explicitly listed on most SHL pages  
 
-Scraping respects rate limits via request delays
+- Scraping respects rate limits via request delays  
 
-Reranking uses a lightweight LLM to minimize cost
+- Lightweight LLM used to minimize cost  
 
 ## 📌 Notes
 

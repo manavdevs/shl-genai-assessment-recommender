@@ -1,10 +1,11 @@
 from openai import OpenAI
 from typing import List, Dict
 import os
+import re
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def rerank(query: str, candidates: List[Dict], top_k: int = 5) -> List[Dict]:
+def rerank(query: str, candidates: List[Dict], top_k: int = 10) -> List[Dict]:
     prompt = f"""
 You are an expert HR assessment recommender.
 
@@ -12,7 +13,7 @@ User query:
 "{query}"
 
 Rank the following SHL assessments from most relevant to least relevant.
-Return ONLY a numbered list of assessment names.
+Return ONLY a numbered list of indices (not names).
 
 Assessments:
 """
@@ -29,11 +30,18 @@ Assessments:
         temperature=0.0
     )
 
-    ranked_text = response.choices[0].message.content.lower()
+    text = response.choices[0].message.content
+
+    # Extract indices like: 1, 2, 3...
+    indices = [int(i) for i in re.findall(r"\b\d+\b", text)]
 
     ranked = []
-    for c in candidates:
-        if c["name"].lower() in ranked_text:
-            ranked.append(c)
+    for i in indices:
+        if 1 <= i <= len(candidates):
+            ranked.append(candidates[i - 1])
+
+    # Fallback safety
+    if not ranked:
+        ranked = candidates
 
     return ranked[:top_k]
