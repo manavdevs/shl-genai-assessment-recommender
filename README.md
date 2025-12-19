@@ -20,15 +20,17 @@ This system solves that by:
 
 ## 🧠 System Architecture
 
-User Query  
+User Query
+↓
+Query Embedding (Gemini)
+↓
+FAISS Vector Search (Top-N candidates)
+↓
+LLM-based Reranking (OpenAI)
 ↓  
-Query Embedding (Gemini)  
+FastAPI Recommendation API  
 ↓  
-FAISS Vector Search (Top-N candidates)  
-↓  
-LLM-based Reranking (OpenAI)  
-↓  
-Final Ranked Assessment Recommendations  
+Streamlit Frontend  
 
 This follows a **two-stage retrieval architecture**, which is industry standard for large-scale semantic search systems.
 
@@ -82,6 +84,71 @@ This ensures that **similar ≠ relevant** results are filtered correctly.
 
 ---
 
+### Step 5 — API & Frontend
+
+#### 🔹 Backend (FastAPI)
+
+- Exposes an Appendix-compliant REST API
+- Endpoints:
+  - `GET /health`
+  - `POST /recommend`
+
+All responses:
+- Use JSON
+- Return proper HTTP status codes
+- Follow the required response schema
+
+#### 🔹 Frontend (Streamlit)
+
+- Interactive UI for entering job descriptions
+- Displays ranked SHL assessments with full metadata
+- Communicates with backend via HTTP API
+
+---
+
+## 🌐 API Specification (Appendix 2 Compliant)
+
+### Health Check
+```bash
+GET /health
+Response:
+{
+"status": "healthy"
+}
+
+```
+
+### Recommendation Endpoint
+```bash
+
+POST /recommend
+Content-Type: application/json
+
+Body:
+{
+"query": "string",
+"top_k": 5
+}
+```
+
+
+Response:
+```json
+{
+  "recommended_assessments": [
+    {
+      "name": "Core Java (Advanced Level)",
+      "url": "https://www.shl.com/...",
+      "description": "...",
+      "duration": 30,
+      "remote_support": "Yes",
+      "adaptive_support": "No",
+      "test_type": ["Knowledge & Skills"]
+    }
+  ]
+}
+```
+
 ## 🧪 How to Run (Core Pipeline)
 
 Install dependencies:
@@ -90,11 +157,40 @@ pip install -r requirements.txt
 ```
 
 Run retrieval and reranking tests:
+
 ```bash
 python -m retrieval.test_retrieval  
-python -m reranking.test_rerank
+python -m reranking.test_rerank  
 ```
-⚠️ Assumptions & Limitations
+
+Run backend
+```bash
+uvicorn backend.main:app --reload  
+```
+Run frontend
+
+```bash
+streamlit run frontend/app.py  
+```
+
+Swagger UI available at:
+
+http://127.0.0.1:8000/docs
+
+
+## 📊 Evaluation (Upcoming)
+
+- Recall@10 using the provided train/test dataset  
+
+- Evaluation applied at:  
+
+  -  Retrieval stage  
+
+  - Final recommendation stage  
+
+- Analysis of recommendation balance across test types (e.g., Knowledge & Skills vs Personality & Behaviour)
+
+## ⚠️ Assumptions & Limitations
 
 Some assessments do not expose duration or job level information
 
@@ -104,16 +200,15 @@ Scraping respects rate limits via request delays
 
 Reranking uses a lightweight LLM to minimize cost
 
-🚀 Next Steps
+## 📌 Notes
 
-Wrap retrieval pipeline into a FastAPI backend
+- API runs over HTTP locally; HTTPS supported in production deployment  
 
-Build a Streamlit web interface
+- The system is modular, reproducible, and maintainable  
 
-Add evaluation metrics (Recall@K)
+- Designed for easy extension and evaluation  
 
-Generate final CSV predictions for test queries
 
-👤 Author
+## 👤 Author
 
 Manav Karwa
